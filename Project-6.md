@@ -79,8 +79,92 @@
 
 ![verifying vg creation](./images/sudo-vgs.png)
 
+### Using `lvcreate` utility to create 2 logical volumes. apps-lv (Use half of the PV size), and logs-lv Use the remaining space of the PV size. NOTE: apps-lv will be used to store data for the Website while, logs-lv will be used to store data for logs.
 
+`sudo lvcreate -n apps-lv -L 14G webdata-vg`
+`sudo lvcreate -n logs-lv -L 14G webdata-vg`
 
+![logical volume creation](./images/lv-create.png)
 
+### Verify that your Logical Volume has been created successfully by running `sudo lvs`
+
+![verifying logical volume](./images/sudo-lvs.png)
+
+### Verifying the entire setup
+
+`sudo vgdisplay -v #view complete setup - VG, PV, and LV`
+
+![verifying setup](./images/sudo-vgdisplay.png)
+
+`sudo lsblk`
+
+![verifying setup](./images/sudo-lsblk.png)
+
+### Using `mkfs.ext4` to format the logical volumes with ext4 filesystem
+
+`sudo mkfs -t ext4 /dev/webdata-vg/apps-lv`
+`sudo mkfs -t ext4 /dev/webdata-vg/logs-lv`
+
+![formatting LVs](./images/sudo-mkfs.png)
+
+### Creating /var/www/html directory to store website files
+
+`sudo mkdir -p /var/www/html`
+
+### Creating /home/recovery/logs to store backup of log data
+
+`sudo mkdir -p /home/recovery/logs`
+
+### Mount /var/www/html on apps-lv logical volume
+
+`sudo mount /dev/webdata-vg/apps-lv /var/www/html/`
+
+![create and mount](./images/sudos.png)
+
+### Use rsync utility to backup all the files in the log directory /var/log into /home/recovery/logs (This is required before mounting the file system)
+
+`sudo rsync -av /var/log/. /home/recovery/logs/`
+
+![rsync utility](./images/sudo-rsync.png)
+
+### Mount /var/log on logs-lv logical volume. (Note that all the existing data on /var/log will be deleted. That is why step above is very important)
+
+`sudo mount /dev/webdata-vg/logs-lv /var/log`
+
+![mounting /var/log on lv](./images/mount-var-log.png)
+
+### Restore log files back into /var/log directory
+
+`sudo rsync -av /home/recovery/logs/. /var/log`
+
+![restoring log files](./images/rsync-av.png)
+
+### Updating /etc/fstab file so that the mount configuration will persist after restart of the server.
+
+## UPDATE THE `/ETC/FSTAB` FILE
+
+### The UUID of the device will be used to update the /etc/fstab file;
+
+`sudo blkid`
+
+![UUID](./images/sudo-blkid.png)
+
+`sudo vi /etc/fstab`
+
+### Updating /etc/fstab in this format using my own UUID, without the leading and ending quotes.
+
+![Updating /etc/fstab](./images/vi-etc.png)
+
+### Test the configuration and reload the daemon
+
+`sudo mount -a`
+`sudo systemctl daemon-reload`
+
+![testing config and reloading daemon](./images/mount-systemctl.png)
+### Verifying the setup by running `df -h`, output must look like this:
+
+`df -h`
+
+![verifying setup](./images/dfh.png)
 
 
