@@ -161,10 +161,84 @@
 `sudo systemctl daemon-reload`
 
 ![testing config and reloading daemon](./images/mount-systemctl.png)
-### Verifying the setup by running `df -h`, output must look like this:
+### Verifying the setup by running `df -h`,
 
 `df -h`
 
 ![verifying setup](./images/dfh.png)
 
+## Step 2 — Prepare the Database Server
 
+### Launching a second RedHat EC2 instance that will have a role – ‘DB Server’
+### Repeating the same steps as for the Web Server, but instead of apps-lv, we create db-lv and mount it to /db directory instead of /var/www/html/.
+
+## STEPS REPEATED ON THE DB SERVER AS DESCRIBED ABOVE
+### Use `lsblk` command to inspect what block devices are attached to the server. Notice names of your newly created devices. All devices in Linux reside in /dev/ directory. Inspect it with ls /dev/ and make sure you see all 3 newly created block devices there – their names will likely be xvdf, xvdh, xvdg.
+
+![inspecting block devices attached to DB server](./images/lsblk-db.png)
+
+### Using `df -h` command to see all mounts and free space on your server
+
+![seeing mounts and free spaces on the DB server](./images/dfh-db.png)
+
+### Use `gdisk` utility to create a single partition on each of the 3 disks
+
+`sudo gdisk /dev/xvdf`
+`sudo gdisk /dev/xvdg`
+`sudo gdisk /dev/xvdh`
+
+![partition xvdf](./images/xvdf-db.png)
+![partition xvdg](./images/xvdg-db.png)
+![partition xvdh](./images/xvdh-db.png)
+
+### Use `lsblk` utility to view the newly configured partition on each of the 3 disks.
+
+![viewing newly configured partitions](./images/lsblk-db2.png)
+
+### Installing lvm2 package using `sudo yum install lvm2`. Run `sudo lvmdiskscan` command to check for available partitions.
+
+`sudo yum install lvm2`
+
+![installing lvm2](./images/lvm2-db.png)
+
+`sudo lvmdiskscan`
+
+![available partitions](./images/lvmdiskscan-db.png)
+
+### Using pvcreate utility to mark each of 3 disks as physical volumes (PVs) to be used by LVM
+
+`sudo pvcreate /dev/xvdf1`
+`sudo pvcreate /dev/xvdg1`
+`sudo pvcreate /dev/xvdh1`
+
+### Verify that your Physical volume has been created successfully by running `sudo pvs`
+
+![verifying PVs](./images/sudopvs-db.png)
+
+### Use vgcreate utility to add all 3 PVs to a volume group (VG). Name the VG webdata-vg
+
+`sudo vgcreate webdata-vg /dev/xvdh1 /dev/xvdg1 /dev/xvdf1`
+
+### Verify that your VG has been created successfully by running `sudo vgs`
+
+![verifying PVs](./images/vgcreate-db.png)
+
+### Using lvcreate utility to create 2 logical volumes. db-lv (Use half of the PV size), and logs-lv Use the remaining space of the PV size. NOTE: db-lv will be used to store data for the database while, logs-lv will be used to store data for logs.
+
+`sudo lvcreate -n db-lv -L 14G webdata-vg`
+`sudo lvcreate -n logs-lv -L 14G webdata-vg`
+
+### Verify that your Logical Volume has been created successfully by running `sudo lvs`
+
+![creating LVs](./images/lvcreate-db.png)
+
+### Verifying the entire setup:
+
+`sudo vgdisplay -v #view complete setup - VG, PV, and LV`
+
+
+![VG, PV, LV display](./images/vgdisplay-db.png)
+
+`sudo lsblk`
+
+![lsblk](./images/lsblk-db3.png)
