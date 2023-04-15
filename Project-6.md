@@ -369,6 +369,7 @@ cp -R wordpress /var/www/html/
 ![Downloading wordpress](./images/wordpress-1234.png)
 ![Downloading wordpress](./images/wordpress-567891011.png)
 ### Configure SELinux Policies
+
 ```
 sudo chown -R apache:apache /var/www/html/wordpress
 sudo chcon -t httpd_sys_rw_content_t /var/www/html/wordpress -R
@@ -377,3 +378,52 @@ sudo setsebool -P httpd_can_network_connect=1
 
 ![SE Linux Policies](./images/cho.png)
 ## Installing MySQL on your DB Server EC2
+
+`sudo yum update`
+`sudo yum install mysql-server`
+
+![yum update](./images/yum-update.png)
+![installing mysql server](./images/install-mysql-server.png)
+
+### Verifying that the service is up and running by using `sudo systemctl status mysqld`, if it is not running, restart the service and enable it so it will be running even after reboot:
+
+```
+sudo systemctl restart mysqld
+sudo systemctl enable mysqld
+```
+
+![verifying service status](./images/mysqld-running.png)
+
+### Configure DB to work with WordPress
+
+```
+sudo mysql
+CREATE DATABASE wordpress;
+CREATE USER `myuser`@`<Web-Server-Private-IP-Address>` IDENTIFIED BY 'mypass';
+GRANT ALL ON wordpress.* TO 'myuser'@'<Web-Server-Private-IP-Address>';
+FLUSH PRIVILEGES;
+SHOW DATABASES;
+exit
+```
+
+![configuring DB](./images/mysql-db.png)
+
+### Configure WordPress to connect to remote database.
+
+### Hint: I Will not forget to open MySQL port 3306 on DB Server EC2. For extra security, I shall allow access to the DB server ONLY from the Web Server’s IP address, so in the Inbound Rule configuration, I will specify source as /32
+
+### Installing MySQL client and testing that I can connect from my Web Server to my DB server by using `mysql-client`
+
+`sudo yum install mysql`
+
+![installing mysql client](./images/install-mysql-client.png)
+
+### Creating login to the database on the db server:
+
+`sudo mysql -u admin -p -h <DB-Server-Private-IP-address>`
+
+![installing mysql client](./images/remote-sql-db.png)
+
+### Verifying that I can successfully execute `SHOW DATABASES;` command and see a list of existing databases.
+
+![showing databases from remote server](./images/remote-show-databases.png)
