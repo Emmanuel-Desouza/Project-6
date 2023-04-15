@@ -434,6 +434,7 @@ exit
 
 `sudo vi /etc/httpd/conf.d/wordpress.conf`
 
+![updating wordpress config](./images/wordpress-conf.png)
 ### Updating the config file with lines below:
 
 ```
@@ -454,11 +455,16 @@ CustomLog /var/log/httpd/wordpress_access.log common
 
 ### To apply the changes, restart Apache
 
+`sudo systemctl restart httpd`
+
+![Restarting Apache](./images/restart-apache.png)
+
 ### Edit the wp-config file
 
 `sudo vi /var/www/html/wordpress/wp-config.php`
 
-### and adding the following lines:
+![Editing wp-config](./images/edit-config.png)
+### by adding the following lines:
 
 ```
 define('DB_NAME', 'wordpress');
@@ -469,6 +475,7 @@ define('DB_CHARSET', 'utf8mb4');
 define('DB_COLLATE', '');
 ```
 
+![vi insert](./images/vim-config.png)
 ### Accessing from my browser the link to my WordPress site, over the internet
 
 [WordPress](http://44.201.107.249/wp-admin)
