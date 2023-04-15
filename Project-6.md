@@ -236,9 +236,54 @@
 
 `sudo vgdisplay -v #view complete setup - VG, PV, and LV`
 
-
 ![VG, PV, LV display](./images/vgdisplay-db.png)
 
 `sudo lsblk`
 
 ![lsblk](./images/lsblk-db3.png)
+
+### Using mkfs.ext4 to format the logical volumes with ext4 filesystem
+
+`sudo mkfs -t ext4 /dev/webdata-vg/db-lv`
+`sudo mkfs -t ext4 /dev/webdata-vg/logs-lv`
+
+![formatting LVs](./images/db-logs.png)
+
+### Creating /db directory to store db files
+
+`sudo mkdir -p /db`
+
+![db directory](./images/mkdir-db.png)
+
+### Creating /home/recovery/logs to store backup of log data
+
+`sudo mkdir -p /home/recovery/logs`
+
+![recovery directory](./images/mkdir-logs.png)
+
+### Mount /db on db-lv logical volume
+
+`sudo mount /dev/webdata-vg/db-lv /db`
+
+![mounting /db](./images/mount-db.png)
+
+### Use rsync utility to backup all the files in the log directory /var/log into /home/recovery/logs (This is required before mounting the file system)
+
+`sudo rsync -av /var/log/. /home/recovery/logs/`
+
+![backing up files](./images/rsync-logs.png)
+
+### Mount /var/log on logs-lv logical volume. (Note that all the existing data on /var/log will be deleted)
+
+`sudo mount /dev/webdata-vg/logs-lv /var/log`
+
+![mounting log directory on log LV](./images/mount-logs.png)
+
+### Restore log files back into /var/log directory
+
+`sudo rsync -av /home/recovery/logs/. /var/log`
+
+![restoring log backup](./images/restore-logs.png)
+
+## Update /etc/fstab file so that the mount configuration will persist after restart of the server.
+
