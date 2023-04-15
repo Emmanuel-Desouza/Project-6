@@ -285,5 +285,95 @@
 
 ![restoring log backup](./images/restore-logs.png)
 
-## Update /etc/fstab file so that the mount configuration will persist after restart of the server.
+## Updating /etc/fstab file so that the mount configuration will persist after restart of the server.
 
+## UPDATING THE `/ETC/FSTAB` FILE
+
+### The UUID of the device will be used to update the /etc/fstab file;
+
+`sudo blkid`
+
+![getting UUIDs](./images/blkid-db.png)
+
+`sudo vi /etc/fstab`
+
+![opening /etc/fstab](./images/sudo-fstab.png)
+
+### Updating /etc/fstab in this format using my UUIDs
+
+![updating /etc/fstab](./images/vi-etc-db.png)
+
+### Testing the configuration and reloading the daemon
+
+`sudo mount -a`
+`sudo systemctl daemon-reload`
+
+![testing the configuration](./images/system-ctl.png)
+
+### Verify your setup by running `df -h`, output must look like this:
+
+![verifying setup](./images/dfh-db2.png)
+
+## Installing WordPress on Web Server EC2
+
+### Updating the repository
+
+`sudo yum -y update`
+
+![yum update](./images/sudo-yum-web.png)
+### Install wget, Apache and it’s dependencies
+
+`sudo yum -y install wget httpd php php-mysqlnd php-fpm php-json`
+
+![Installing dependencies](./images/install-wget-web.png)
+### Starting Apache
+
+`sudo systemctl enable httpd`
+`sudo systemctl start httpd`
+
+![Starting Apache](./images/enable-start-httpd.png)
+
+### To install PHP and it’s dependencies
+
+```
+sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+sudo yum install yum-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+sudo yum module list php
+sudo yum module reset php
+sudo yum module enable php:remi-7.4
+sudo yum install php php-opcache php-gd php-curl php-mysqlnd
+sudo systemctl start php-fpm
+sudo systemctl enable php-fpm
+sudo setsebool -P httpd_execmem 1
+```
+
+### Restart Apache
+
+`sudo systemctl restart httpd`
+
+![dependencies](./images/depend-1.png)
+![dependencies](./images/depend-2.png)
+![dependencies](./images/depend-3-4.png)
+![dependencies](./images/depend-5-6-7-8.png)
+
+### Download wordpress and copy wordpress to var/www/html
+
+mkdir wordpress
+cd   wordpress
+sudo wget http://wordpress.org/latest.tar.gz
+sudo tar xzvf latest.tar.gz
+sudo rm -rf latest.tar.gz
+cp wordpress/wp-config-sample.php wordpress/wp-config.php
+cp -R wordpress /var/www/html/
+
+![Downloading wordpress](./images/wordpress-1234.png)
+![Downloading wordpress](./images/wordpress-567891011.png)
+### Configure SELinux Policies
+```
+sudo chown -R apache:apache /var/www/html/wordpress
+sudo chcon -t httpd_sys_rw_content_t /var/www/html/wordpress -R
+sudo setsebool -P httpd_can_network_connect=1
+```
+
+![SE Linux Policies](./images/cho.png)
+## Installing MySQL on your DB Server EC2
