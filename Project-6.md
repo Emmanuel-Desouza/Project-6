@@ -491,6 +491,6 @@ define('DB_COLLATE', '');
 ![WordPress](./images/wordpress-9.png)
 
 
-# Project Completed Successfully
+# Project Completed Successfully!
 
 ## I have demonstrated how to configure Linux storage susbystem and deployed a full-scale Web Solution using WordPress CMS and MySQL RDBMS!
