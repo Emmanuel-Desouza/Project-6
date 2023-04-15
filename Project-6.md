@@ -427,3 +427,58 @@ exit
 ### Verifying that I can successfully execute `SHOW DATABASES;` command and see a list of existing databases.
 
 ![showing databases from remote server](./images/remote-show-databases.png)
+
+### Changing permissions and configuration so Apache could use WordPress:
+
+### Here we need to create a configuration file for wordpress in order to point client requests to the wordpress directory.
+
+`sudo vi /etc/httpd/conf.d/wordpress.conf`
+
+### Updating the config file with lines below:
+
+```
+<VirtualHost *:80>
+ServerAdmin derick@172.31.80.110
+DocumentRoot /var/www/html/wordpress
+
+<Directory "/var/www/html/wordpress">
+Options Indexes FollowSymLinks
+AllowOverride all
+Require all granted
+</Directory>
+
+ErrorLog /var/log/httpd/wordpress_error.log
+CustomLog /var/log/httpd/wordpress_access.log common
+</VirtualHost>
+```
+
+### To apply the changes, restart Apache
+
+### Edit the wp-config file
+
+`sudo vi /var/www/html/wordpress/wp-config.php`
+
+### and adding the following lines:
+
+```
+define('DB_NAME', 'wordpress');
+define('DB_USER', 'myuser');
+define('DB_PASSWORD', 'mypass');
+define('DB_HOST', '<db-Server-Private-IP-Address>');
+define('DB_CHARSET', 'utf8mb4');
+define('DB_COLLATE', '');
+```
+
+### Accessing from my browser the link to my WordPress site, over the internet
+
+[WordPress](http://44.201.107.249/wp-admin)
+
+![WordPress](./images/wordpress-webpage-installation.png)
+![WordPress](./images/wordpress-2.png)
+![WordPress](./images/wordpress-3.png)
+![WordPress](./images/wordpress-4.png)
+![WordPress](./images/wordpress-5.png)
+![WordPress](./images/wordpress-6.png)
+![WordPress](./images/wordpress-7.png)
+![WordPress](./images/wordpress-8.png)
+![WordPress](./images/wordpress-9.png)
